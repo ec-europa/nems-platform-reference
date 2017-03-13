@@ -5,6 +5,7 @@
  */
 
 include_once 'nems_core.features.inc';
+include_once 'nems_core.platform_overrides.inc';
 
 define("NEMS_CORE_BLOCK_ACCESS_ROLE", 6);
 const NEMS_CORE_BLOCK_ACCESS_PERMISSIONS = array(
@@ -24,6 +25,80 @@ const NEMS_CORE_BLOCK_ACCESS_PERMISSIONS = array(
   'move',
   'view',
 );
+
+/**
+ * Implements hook_nexteuropa_token_token_handlers().
+ */
+function nems_core_nexteuropa_token_token_handlers() {
+  return array(
+    'handler_name' => '\Drupal\nems_core\FileUrlTokenHandler',
+  );
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function nems_core_form_media_wysiwyg_format_form_alter(&$form, &$form_state, $form_id) {
+  // Set preview for simple link.
+  if (isset($form_state['values']) && $form_state['values']['format'] == 'simple_link') {
+    $form['preview']['#theme'] = 'simple_link';
+  }
+}
+
+/**
+ * Implements hook_entity_info_alter().
+ */
+function nems_core_entity_info_alter(&$entity_info) {
+  $entity_info['file']['view modes']['simple_link'] = array(
+    'label' => t('Simple link to file'),
+    'custom settings' => TRUE,
+  );
+}
+
+/**
+ * Implements hook_media_wysiwyg_token_to_markup_alter().
+ */
+function nems_core_media_wysiwyg_token_to_markup_alter(&$element, $tag_info, $settings) {
+  if ($tag_info['view_mode'] == 'simple_link') {
+    $element['content'] = $element['content']['file'];
+    $element['content']['#theme'] = 'simple_link';
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function nems_core_theme($existing, $type, $theme, $path) {
+  return array(
+    'simple_link' => array(
+      'variables' => array('file' => NULL),
+    ),
+  );
+}
+
+/**
+ * Implements theme_simple_link().
+ */
+function theme_simple_link($variables) {
+  $file = $variables['file'];
+  $url = file_create_url($file->uri);
+  $options = array(
+    'attributes' => array(
+      'type' => $file->filemime . '; length=' . $file->filesize,
+    ),
+  );
+
+  // Use the description as the link text if available.
+  if (empty($file->description)) {
+    $link_text = $file->filename;
+  }
+  else {
+    $link_text = $file->description;
+    $options['attributes']['title'] = check_plain($file->filename);
+  }
+
+  return l($link_text, $url, $options);
+}
 
 /**
  * Implements hook_permission().
@@ -126,6 +201,174 @@ function nems_core_menu_alter(&$items) {
   // Restrict access to administrator users.
   $items['user/%user/edit']['access callback'] = '_nems_core_user_edit_access';
   $items['user/%user/cancel']['access callback'] = '_nems_core_user_edit_access';
+
+  // Try to fix fielfield_sources autocomplete.
+  if (isset($items['file/reference/%/%/%'])) {
+    $items['file/reference/%/%/%']['page callback'] = 'nems_core_filefield_source_reference_autocomplete';
+  }
+}
+
+/**
+ * Menu callback; autocomplete.js callback to return a list of files.
+ */
+function nems_core_filefield_source_reference_autocomplete($entity_type, $bundle_name, $field_name, $filename) {
+  $field = field_info_instance($entity_type, $field_name, $bundle_name);
+
+  $items = array();
+  if (!empty($field)) {
+    $files = _nems_core_filefield_source_reference_get_files($filename, $field);
+    foreach ($files as $fid => $file) {
+      $items[$file->filename . " [fid:$fid]"] = theme('filefield_source_reference_autocomplete_item', array('file' => $file));
+    }
+  }
+
+  drupal_json_output($items);
+}
+
+/**
+ * Get all the files used within a particular field (or all fields).
+ *
+ * @param string $filename
+ *   The partial name of the file to retrieve.
+ * @param object $instance
+ *   Optional. A CCK field array for which to filter returned files.
+ */
+function _nems_core_filefield_source_reference_get_files($filename, $instance = NULL) {
+  if (isset($instance)) {
+    // If we are looking at a single field, cache its settings,
+    // in case we want to search all fields.
+    $setting_autocomplete = empty($instance['widget']['settings']['filefield_sources']['source_reference']['autocomplete']) ? 0 : 1;
+    $setting_search_all_fields = empty($instance['widget']['settings']['filefield_sources']['source_reference']['search_all_fields']) ? 0 : 1;
+  }
+
+  $instances = array();
+  if (!isset($instance) || $setting_search_all_fields) {
+    foreach (field_info_fields() as $instance) {
+      if ($instance['type'] == 'file' || $instance['type'] == 'image') {
+        $instances[] = $instance;
+      }
+    }
+  }
+  else {
+    $instances = array($instance);
+  }
+
+  $files = array();
+  foreach ($instances as $instance) {
+    // Load the field data, which contains the schema information.
+    $field = field_info_field($instance['field_name']);
+
+    // We don't support fields that are not stored with SQL.
+    if (!isset($field['storage']['details']['sql']['FIELD_LOAD_CURRENT'])) {
+      continue;
+    }
+
+    // If we are searching all fields,
+    // use the autocomplete settings from the source field.
+    if (!empty($setting_search_all_fields)) {
+      $instance['widget']['settings']['filefield_sources']['source_reference']['autocomplete'] = empty($setting_autocomplete) ? 0 : 1;
+    }
+
+    // 1 == contains, 0 == starts with.
+    $like = empty($instance['widget']['settings']['filefield_sources']['source_reference']['autocomplete']) ? (db_like($filename) . '%') : ('%' . db_like($filename) . '%');
+
+    $query = db_select('file_managed', 'f');
+    $query->fields('f');
+    $query->condition('f.status', 1);
+    $query->condition('f.filename', $like, 'LIKE');
+    $query->orderBy('f.timestamp', 'DESC');
+    $query->groupBy('f.fid');
+    $query->range(0, 30);
+    $query->addTag('filefield_source_reference_list');
+    $result = $query->execute();
+
+    foreach ($result as $file) {
+      $files[$file->fid] = $file;
+    }
+  }
+
+  return $files;
+}
+
+/**
+ * Implements hook_menu().
+ */
+function nems_core_menu() {
+  // Admin_menu does not render menu items allowed by menu_admin_per_menu,
+  // So as a work around I add them back like this.
+  $menus = menu_get_menus();
+  $webmaster_menus = array('menu-breadcrumb-menu', 'menu-service-tools');
+
+  foreach ($webmaster_menus as $mid) {
+    $menu = menu_load($mid);
+    $items['admin/structure/menu/manage/' . $mid . '/list'] = array(
+      'title' => $menus[$mid],
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('menu_overview_form', $menu),
+      'access callback' => '_nems_core_menu_item_access',
+      'access arguments' => array($menu),
+      'file' => 'menu.admin.inc',
+      'file path' => drupal_get_path('module', 'menu'),
+    );
+  }
+
+  $items['node/%node/%'] = array(
+    'page callback' => 'nems_core_wysiwyg_view_file',
+    'page arguments' => array(2),
+    'access arguments' => array('use media wysiwyg'),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ * Callback: serves images requested by the new file token.
+ *
+ * @param string $filetoken
+ *   File token passed through url.
+ */
+function nems_core_wysiwyg_view_file($filetoken) {
+  $fid = str_replace(array('[file:', ':url]'), '', $filetoken);
+  $fid = intval($fid);
+  $path = FALSE;
+
+  if (!empty($fid)) {
+    $file = file_load($fid);
+
+    if (!empty($file)) {
+      $path = file_create_url($file->uri);
+    }
+  }
+
+  if (!empty($path)) {
+    drupal_goto($path);
+  }
+  else {
+    drupal_not_found();
+  }
+}
+
+/**
+ * Implements hook_module_implements_alter().
+ */
+function nems_core_module_implements_alter(&$implementations, $hook) {
+  if ($hook == 'form_alter') {
+    $group = $implementations['nems_core'];
+    unset($implementations['nems_core']);
+    $implementations['nems_core'] = $group;
+  }
+}
+
+/**
+ * Implements hook_form_BASE_FORM_ID_alter().
+ */
+function nems_core_form_node_form_alter(&$form, &$form_state, $form_id) {
+  if (isset($form['language'])) {
+    // Ensure correct language list (no disabled languages should be present).
+    $languages = i18n_node_language_list($form['#node']);
+    $form['language']['#options'] = $languages;
+  }
 }
 
 /**
@@ -139,6 +382,38 @@ function nems_core_menu_alter(&$items) {
  */
 function _nems_core_menu_block_access($account = NULL) {
   return user_access('administer blocks', $account);
+}
+
+/**
+ * Determine whether the user has permission to see these items.
+ *
+ * @param array $menu
+ *   The menu item viwed.
+ *
+ * @return bool
+ *   The result.
+ */
+function _nems_core_menu_item_access($menu = NULL) {
+  global $user;
+
+  if (!in_array('webmaster', $user->roles)) {
+    return FALSE;
+  }
+
+  return _menu_admin_per_menu_menu_access($menu);
+}
+
+/**
+ * Implements hook_node_access().
+ */
+function nems_core_node_access($node, $op, $account) {
+  $type = is_string($node) ? $node : $node->type;
+
+  if (in_array($type, array('page', 'article')) && !in_array('administrator', $account->roles)) {
+    return NODE_ACCESS_DENY;
+  }
+
+  return NODE_ACCESS_IGNORE;
 }
 
 /**
@@ -332,4 +607,231 @@ function _nems_core_user_access($permissions, $account = NULL) {
     }
   }
   return $access;
+}
+
+/**
+ * Implements template_preprocess().
+ */
+function nems_core_preprocess_feature_set_admin_form(&$variables) {
+  // Add specific javascript.
+  drupal_add_js(drupal_get_path('theme', 'ec_resp') . '/scripts/feature-set.js', array(
+    'scope' => 'footer',
+    'weight' => 13,
+  ));
+
+  $categories_list = '';
+  $features_list = '';
+  // Define removable feature sets.
+  $remove = array(
+    'featureset-ec_content_slider',
+    'featureset-events_standard',
+    'featureset-links_standard',
+    'featureset-multisite_metatags',
+    'featureset-nexteuropa_webtools',
+    'featureset-wiki_standard',
+    'featureset-feed_rss_core',
+    'featureset-news_standard',
+    'featureset-newsletters',
+    'featureset-nexteuropa_geofield',
+    'featureset-nexteuropa_geojson_feeds',
+    'featureset-nexteuropa_integration',
+    'featureset-multisite_audio',
+    'featureset-multisite_mediagallery_standard',
+    'featureset-multilingual_tools',
+    'featureset-multisite_multilingual_references',
+    'featureset-multisite_translations',
+    'featureset-splash_screen',
+    'featureset-fat_footer',
+    'featureset-multisite_megamenu',
+    'featureset-ec_profiles',
+  );
+
+  // Filter out the unwanted feature sets.
+  foreach ($variables['feature_set_category']['category'] as $category => $features) {
+    foreach ($features as $key => $value) {
+      if (in_array($key, $remove)) {
+        unset($features[$key]);
+      }
+    }
+
+    if (empty($features)) {
+      unset($variables['feature_set_category']['category'][$category]);
+    }
+    else {
+      $variables['feature_set_category']['category'][$category] = $features;
+    }
+  }
+
+  foreach ($variables['feature_set_category']['category'] as $category => $features) {
+    // Create category id.
+    $category_id = preg_replace("/[^a-z0-9_\s-]/", "", drupal_strtolower($category));
+    $category_id = preg_replace("/[\s-]+/", " ", $category_id);
+    $category_id = preg_replace("/[\s_]/", "-", $category_id);
+
+    // Format categories.
+    $categories_list .= theme('html_tag', array(
+      'element' => array(
+        '#tag' => 'li',
+        '#attributes' => array(
+          'class' => 'feature-set__category',
+          'role' => 'presentation',
+        ),
+        '#value' => l(
+          $category . ' (' . count($features) . ')',
+          '',
+          array(
+            'fragment' => $category_id,
+            'external' => TRUE,
+          )
+        ),
+      ),
+    ));
+
+    // Format features.
+    $feature_full = '';
+    foreach ($features as $item) {
+      // Get the icon if available.
+      if (!empty($item['#featuresetinfo']['font'])) {
+        $feature_icon = theme('html_tag', array(
+          'element' => array(
+            '#tag' => 'div',
+            '#attributes' => array(
+              'class' => array(
+                'feature-set__icon',
+                $item['#featuresetinfo']['font'],
+              ),
+            ),
+            '#value' => '',
+          ),
+        ));
+      }
+      elseif (!empty($item['#featuresetinfo']['icon'])) {
+        $image = array(
+          'path' => $item['#featuresetinfo']['icon'],
+          'alt' => t('@feature-set icon', array('@feature-set' => $item['#featuresetinfo']['featureset'])),
+          'attributes' => array(
+            'class' => 'feature-set__icon',
+          ),
+        );
+        $feature_icon = theme('image', $image);
+      }
+      else {
+        $feature_icon = '';
+      }
+
+      // Format feature name.
+      $feature_name = theme('html_tag', array(
+        'element' => array(
+          '#tag' => 'div',
+          '#attributes' => array(
+            'class' => 'feature-set__name',
+          ),
+          '#value' => $item['#featuresetinfo']['featureset'],
+        ),
+      ));
+
+      // Format feature documentation.
+      $feature_documentation = !empty($item['#featuresetinfo']['documentation'])
+        ? l(
+          t('See @name documentation', array('@name' => $item['#featuresetinfo']['featureset'])),
+          $item['#featuresetinfo']['documentation'],
+          array('attributes' => array('target' => '_blank')))
+        : '';
+
+      // Format feature description.
+      $feature_description_value = '';
+      $feature_description_value .= !empty($item['#featuresetinfo']['description'])
+        ? $item['#featuresetinfo']['description']
+        : '';
+      $feature_description_value .= !empty($feature_documentation)
+        ? theme('html_tag', array(
+          'element' => array(
+            '#tag' => 'footer',
+            '#attributes' => array(
+              'class' => 'feature-set__doc',
+            ),
+            '#value' => $feature_documentation,
+          ),
+        ))
+        : '';
+
+      $feature_description = theme('html_tag', array(
+        'element' => array(
+          '#tag' => 'blockquote',
+          '#attributes' => array(
+            'class' => 'feature-set__desc',
+          ),
+          '#value' => $feature_description_value,
+        ),
+      ));
+
+      // Format feature requirements.
+      $feature_require = theme('html_tag', array(
+        'element' => array(
+          '#tag' => 'div',
+          '#attributes' => array(
+            'class' => 'feature-set__doc',
+          ),
+          '#value' => !empty($item['#featuresetinfo']['require'])
+          ? $item['#featuresetinfo']['require']
+          : '',
+        ),
+      ));
+
+      // Format switcher.
+      $feature_switcher = theme('html_tag', array(
+        'element' => array(
+          '#tag' => 'div',
+          '#attributes' => array(
+            'class' => 'feature-set__switch',
+          ),
+          '#value' => render($item),
+        ),
+      ));
+
+      // Group content.
+      $feature_header = theme('html_tag', array(
+        'element' => array(
+          '#tag' => 'div',
+          '#attributes' => array(
+            'class' => 'feature-set__header',
+          ),
+          '#value' => $feature_icon . $feature_name . $feature_switcher,
+        ),
+      ));
+      $feature_content = theme('html_tag', array(
+        'element' => array(
+          '#tag' => 'div',
+          '#attributes' => array(
+            'class' => 'feature-set__content',
+          ),
+          '#value' => $feature_description . $feature_require,
+        ),
+      ));
+      $feature_full .= theme('html_tag', array(
+        'element' => array(
+          '#tag' => 'div',
+          '#attributes' => array(
+            'class' => 'feature-set__feature',
+          ),
+          '#value' => $feature_header . $feature_content,
+        ),
+      ));
+    }
+
+    // Update feature list.
+    $features_list .= theme('html_tag', array(
+      'element' => array(
+        '#tag' => 'div',
+        '#attributes' => array(
+          'id' => $category_id,
+          'class' => 'feature-set__feature-group',
+        ),
+        '#value' => $feature_full,
+      ),
+    ));
+  }
+
+  $variables['feature_set_categories_list'] = $categories_list;
+  $variables['feature_set_features_list'] = $features_list;
 }

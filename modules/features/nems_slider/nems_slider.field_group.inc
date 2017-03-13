@@ -21,12 +21,12 @@ function nems_slider_field_group_info() {
   $field_group->parent_name = '';
   $field_group->data = array(
     'label' => 'Content',
-    'weight' => '2',
+    'weight' => '3',
     'children' => array(
       0 => 'body',
-      1 => 'field_slide_link',
+      1 => 'field_slide_date',
       2 => 'field_slide_image',
-      3 => 'field_slide_date',
+      3 => 'field_slide_link',
     ),
     'format_type' => 'tab',
     'format_settings' => array(

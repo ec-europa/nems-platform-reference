@@ -15,6 +15,7 @@ function nems_slider_user_default_permissions() {
     'name' => 'create any slider bean',
     'roles' => array(
       'editor' => 'editor',
+      'manage blocks' => 'manage blocks',
       'webmaster' => 'webmaster',
     ),
     'module' => 'bean',
@@ -26,6 +27,7 @@ function nems_slider_user_default_permissions() {
     'roles' => array(
       'contributor' => 'contributor',
       'editor' => 'editor',
+      'publish content' => 'publish content',
       'webmaster' => 'webmaster',
     ),
     'module' => 'node',
@@ -35,6 +37,7 @@ function nems_slider_user_default_permissions() {
   $permissions['delete any nems_slide content'] = array(
     'name' => 'delete any nems_slide content',
     'roles' => array(
+      'publish content' => 'publish content',
       'webmaster' => 'webmaster',
     ),
     'module' => 'node',
@@ -44,6 +47,7 @@ function nems_slider_user_default_permissions() {
   $permissions['delete any slider bean'] = array(
     'name' => 'delete any slider bean',
     'roles' => array(
+      'manage blocks' => 'manage blocks',
       'webmaster' => 'webmaster',
     ),
     'module' => 'bean',
@@ -54,6 +58,7 @@ function nems_slider_user_default_permissions() {
     'name' => 'delete own nems_slide content',
     'roles' => array(
       'editor' => 'editor',
+      'publish content' => 'publish content',
       'webmaster' => 'webmaster',
     ),
     'module' => 'node',
@@ -63,6 +68,7 @@ function nems_slider_user_default_permissions() {
   $permissions['edit any nems_slide content'] = array(
     'name' => 'edit any nems_slide content',
     'roles' => array(
+      'publish content' => 'publish content',
       'webmaster' => 'webmaster',
     ),
     'module' => 'node',
@@ -72,6 +78,7 @@ function nems_slider_user_default_permissions() {
   $permissions['edit any slider bean'] = array(
     'name' => 'edit any slider bean',
     'roles' => array(
+      'manage blocks' => 'manage blocks',
       'webmaster' => 'webmaster',
     ),
     'module' => 'bean',
@@ -83,6 +90,7 @@ function nems_slider_user_default_permissions() {
     'roles' => array(
       'contributor' => 'contributor',
       'editor' => 'editor',
+      'publish content' => 'publish content',
       'webmaster' => 'webmaster',
     ),
     'module' => 'node',

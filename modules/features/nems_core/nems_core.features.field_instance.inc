@@ -353,6 +353,12 @@ function nems_core_field_default_field_instances() {
         'type' => 'hidden',
         'weight' => 0,
       ),
+      'simple_link' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
       'teaser' => array(
         'label' => 'above',
         'settings' => array(),
@@ -403,6 +409,12 @@ function nems_core_field_default_field_instances() {
         'type' => 'hidden',
         'weight' => 0,
       ),
+      'simple_link' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
       'teaser' => array(
         'label' => 'above',
         'settings' => array(),
@@ -448,6 +460,12 @@ function nems_core_field_default_field_instances() {
         'weight' => 3,
       ),
       'preview' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+      'simple_link' => array(
         'label' => 'above',
         'settings' => array(),
         'type' => 'hidden',

@@ -1764,6 +1764,124 @@ function nems_events_views_default_views() {
   $export['nems_events'] = $view;
 
   $view = new view();
+  $view->name = 'nems_frontpage_event';
+  $view->description = '';
+  $view->tag = 'default';
+  $view->base_table = 'node';
+  $view->human_name = 'NEMS frontpage event';
+  $view->core = 7;
+  $view->api_version = '3.0';
+  $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
+
+  /* Display: Master */
+  $handler = $view->new_display('default', 'Master', 'default');
+  $handler->display->display_options['title'] = FALSE;
+  $handler->display->display_options['use_more_always'] = FALSE;
+  $handler->display->display_options['access']['type'] = 'perm';
+  $handler->display->display_options['cache']['type'] = 'none';
+  $handler->display->display_options['query']['type'] = 'views_query';
+  $handler->display->display_options['exposed_form']['type'] = 'basic';
+  $handler->display->display_options['pager']['type'] = 'some';
+  $handler->display->display_options['pager']['options']['items_per_page'] = '1';
+  $handler->display->display_options['pager']['options']['offset'] = '0';
+  $handler->display->display_options['style_plugin'] = 'default';
+  $handler->display->display_options['row_plugin'] = 'fields';
+  /* Field: Content: Path */
+  $handler->display->display_options['fields']['path']['id'] = 'path';
+  $handler->display->display_options['fields']['path']['table'] = 'node';
+  $handler->display->display_options['fields']['path']['field'] = 'path';
+  $handler->display->display_options['fields']['path']['label'] = '';
+  $handler->display->display_options['fields']['path']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['path']['element_label_colon'] = FALSE;
+  /* Field: Content: Image */
+  $handler->display->display_options['fields']['field_nems_core_image']['id'] = 'field_nems_core_image';
+  $handler->display->display_options['fields']['field_nems_core_image']['table'] = 'field_data_field_nems_core_image';
+  $handler->display->display_options['fields']['field_nems_core_image']['field'] = 'field_nems_core_image';
+  $handler->display->display_options['fields']['field_nems_core_image']['label'] = '';
+  $handler->display->display_options['fields']['field_nems_core_image']['element_type'] = 'div';
+  $handler->display->display_options['fields']['field_nems_core_image']['element_class'] = 'field-name-field-nems-image';
+  $handler->display->display_options['fields']['field_nems_core_image']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['field_nems_core_image']['click_sort_column'] = 'fid';
+  $handler->display->display_options['fields']['field_nems_core_image']['settings'] = array(
+    'image_style' => '',
+    'image_link' => '',
+  );
+  /* Field: Content: Date */
+  $handler->display->display_options['fields']['field_nems_event_date']['id'] = 'field_nems_event_date';
+  $handler->display->display_options['fields']['field_nems_event_date']['table'] = 'field_data_field_nems_event_date';
+  $handler->display->display_options['fields']['field_nems_event_date']['field'] = 'field_nems_event_date';
+  $handler->display->display_options['fields']['field_nems_event_date']['label'] = '';
+  $handler->display->display_options['fields']['field_nems_event_date']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['field_nems_event_date']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['field_nems_event_date']['settings'] = array(
+    'format_type' => 'short',
+    'fromto' => 'both',
+    'multiple_number' => '',
+    'multiple_from' => '',
+    'multiple_to' => '',
+    'show_remaining_days' => 0,
+  );
+  /* Field: Content: Title */
+  $handler->display->display_options['fields']['title']['id'] = 'title';
+  $handler->display->display_options['fields']['title']['table'] = 'node';
+  $handler->display->display_options['fields']['title']['field'] = 'title';
+  $handler->display->display_options['fields']['title']['label'] = '';
+  $handler->display->display_options['fields']['title']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['title']['alter']['text'] = '<a href="[path]">[title]</a>
+[field_nems_event_date]';
+  $handler->display->display_options['fields']['title']['alter']['word_boundary'] = FALSE;
+  $handler->display->display_options['fields']['title']['alter']['ellipsis'] = FALSE;
+  $handler->display->display_options['fields']['title']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['title']['element_wrapper_class'] = 'field-name-field-ne-body';
+  $handler->display->display_options['fields']['title']['link_to_node'] = FALSE;
+  /* Sort criterion: Content: Date -  start date (field_nems_event_date) */
+  $handler->display->display_options['sorts']['field_nems_event_date_value']['id'] = 'field_nems_event_date_value';
+  $handler->display->display_options['sorts']['field_nems_event_date_value']['table'] = 'field_data_field_nems_event_date';
+  $handler->display->display_options['sorts']['field_nems_event_date_value']['field'] = 'field_nems_event_date_value';
+  $handler->display->display_options['filter_groups']['groups'] = array(
+    1 => 'AND',
+    2 => 'OR',
+  );
+  /* Filter criterion: Content: Published */
+  $handler->display->display_options['filters']['status']['id'] = 'status';
+  $handler->display->display_options['filters']['status']['table'] = 'node';
+  $handler->display->display_options['filters']['status']['field'] = 'status';
+  $handler->display->display_options['filters']['status']['value'] = 1;
+  $handler->display->display_options['filters']['status']['group'] = 1;
+  $handler->display->display_options['filters']['status']['expose']['operator'] = FALSE;
+  /* Filter criterion: Content: Type */
+  $handler->display->display_options['filters']['type']['id'] = 'type';
+  $handler->display->display_options['filters']['type']['table'] = 'node';
+  $handler->display->display_options['filters']['type']['field'] = 'type';
+  $handler->display->display_options['filters']['type']['value'] = array(
+    'nems_event' => 'nems_event',
+  );
+  $handler->display->display_options['filters']['type']['group'] = 1;
+  /* Filter criterion: Content: Date -  start date (field_nems_event_date) */
+  $handler->display->display_options['filters']['field_nems_event_date_value']['id'] = 'field_nems_event_date_value';
+  $handler->display->display_options['filters']['field_nems_event_date_value']['table'] = 'field_data_field_nems_event_date';
+  $handler->display->display_options['filters']['field_nems_event_date_value']['field'] = 'field_nems_event_date_value';
+  $handler->display->display_options['filters']['field_nems_event_date_value']['operator'] = '>=';
+  $handler->display->display_options['filters']['field_nems_event_date_value']['group'] = 2;
+  $handler->display->display_options['filters']['field_nems_event_date_value']['default_date'] = 'today';
+  /* Filter criterion: Content: Date - end date (field_nems_event_date:value2) */
+  $handler->display->display_options['filters']['field_nems_event_date_value2']['id'] = 'field_nems_event_date_value2';
+  $handler->display->display_options['filters']['field_nems_event_date_value2']['table'] = 'field_data_field_nems_event_date';
+  $handler->display->display_options['filters']['field_nems_event_date_value2']['field'] = 'field_nems_event_date_value2';
+  $handler->display->display_options['filters']['field_nems_event_date_value2']['operator'] = '>=';
+  $handler->display->display_options['filters']['field_nems_event_date_value2']['group'] = 2;
+  $handler->display->display_options['filters']['field_nems_event_date_value2']['default_date'] = 'today';
+  /* Filter criterion: Content: Promoted to front page */
+  $handler->display->display_options['filters']['promote']['id'] = 'promote';
+  $handler->display->display_options['filters']['promote']['table'] = 'node';
+  $handler->display->display_options['filters']['promote']['field'] = 'promote';
+  $handler->display->display_options['filters']['promote']['value'] = '1';
+
+  /* Display: Block */
+  $handler = $view->new_display('block', 'Block', 'block');
+  $export['nems_frontpage_event'] = $view;
+
+  $view = new view();
   $view->name = 'nems_upcoming_past_events';
   $view->description = '';
   $view->tag = 'default';
@@ -1775,10 +1893,10 @@ function nems_events_views_default_views() {
 
   /* Display: Master */
   $handler = $view->new_display('default', 'Master', 'default');
-  $handler->display->display_options['title'] = 'Upcoming Events';
-  $handler->display->display_options['css_class'] = 'page-events';
-  $handler->display->display_options['use_ajax'] = TRUE;
+  $handler->display->display_options['title'] = FALSE;
+  $handler->display->display_options['css_class'] = 'block-events';
   $handler->display->display_options['use_more_always'] = FALSE;
+  $handler->display->display_options['use_more_text'] = 'More events';
   $handler->display->display_options['access']['type'] = 'perm';
   $handler->display->display_options['cache']['type'] = 'none';
   $handler->display->display_options['query']['type'] = 'views_query';
@@ -1795,33 +1913,29 @@ function nems_events_views_default_views() {
   $handler->display->display_options['empty']['area']['content'] = 'No event in this category';
   $handler->display->display_options['empty']['area']['format'] = 'full_html';
   /* Field: Field: Title */
-  $handler->display->display_options['fields']['title_field_1']['id'] = 'title_field_1';
-  $handler->display->display_options['fields']['title_field_1']['table'] = 'field_data_title_field';
-  $handler->display->display_options['fields']['title_field_1']['field'] = 'title_field';
-  $handler->display->display_options['fields']['title_field_1']['label'] = '';
-  $handler->display->display_options['fields']['title_field_1']['element_label_colon'] = FALSE;
-  $handler->display->display_options['fields']['title_field_1']['link_to_entity'] = 1;
+  $handler->display->display_options['fields']['title_field']['id'] = 'title_field';
+  $handler->display->display_options['fields']['title_field']['table'] = 'field_data_title_field';
+  $handler->display->display_options['fields']['title_field']['field'] = 'title_field';
+  $handler->display->display_options['fields']['title_field']['label'] = '';
+  $handler->display->display_options['fields']['title_field']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['title_field']['link_to_entity'] = 1;
   /* Field: Content: Location */
   $handler->display->display_options['fields']['field_nems_event_location']['id'] = 'field_nems_event_location';
   $handler->display->display_options['fields']['field_nems_event_location']['table'] = 'field_data_field_nems_event_location';
   $handler->display->display_options['fields']['field_nems_event_location']['field'] = 'field_nems_event_location';
   $handler->display->display_options['fields']['field_nems_event_location']['label'] = '';
   $handler->display->display_options['fields']['field_nems_event_location']['alter']['alter_text'] = TRUE;
-  $handler->display->display_options['fields']['field_nems_event_location']['alter']['text'] = 'Organized in [field_nems_event_location] ';
+  $handler->display->display_options['fields']['field_nems_event_location']['alter']['text'] = '[field_nems_event_location] ';
   $handler->display->display_options['fields']['field_nems_event_location']['element_label_colon'] = FALSE;
-  $handler->display->display_options['fields']['field_nems_event_location']['hide_empty'] = TRUE;
-  $handler->display->display_options['fields']['field_nems_event_location']['hide_alter_empty'] = FALSE;
   /* Field: Content: Date */
   $handler->display->display_options['fields']['field_nems_event_date']['id'] = 'field_nems_event_date';
   $handler->display->display_options['fields']['field_nems_event_date']['table'] = 'field_data_field_nems_event_date';
   $handler->display->display_options['fields']['field_nems_event_date']['field'] = 'field_nems_event_date';
   $handler->display->display_options['fields']['field_nems_event_date']['label'] = '';
-  $handler->display->display_options['fields']['field_nems_event_date']['alter']['alter_text'] = TRUE;
-  $handler->display->display_options['fields']['field_nems_event_date']['alter']['text'] = '<div class="text-muted">[field_nems_event_date]</div>';
   $handler->display->display_options['fields']['field_nems_event_date']['alter']['strip_tags'] = TRUE;
   $handler->display->display_options['fields']['field_nems_event_date']['element_label_colon'] = FALSE;
   $handler->display->display_options['fields']['field_nems_event_date']['settings'] = array(
-    'format_type' => 'events_short_dates',
+    'format_type' => 'short',
     'fromto' => 'both',
     'multiple_number' => '',
     'multiple_from' => '',
@@ -1854,7 +1968,6 @@ function nems_events_views_default_views() {
   $handler->display->display_options['sorts']['field_nems_event_date_value']['id'] = 'field_nems_event_date_value';
   $handler->display->display_options['sorts']['field_nems_event_date_value']['table'] = 'field_data_field_nems_event_date';
   $handler->display->display_options['sorts']['field_nems_event_date_value']['field'] = 'field_nems_event_date_value';
-  $handler->display->display_options['sorts']['field_nems_event_date_value']['order'] = 'DESC';
   /* Filter criterion: Content: Published */
   $handler->display->display_options['filters']['status']['id'] = 'status';
   $handler->display->display_options['filters']['status']['table'] = 'node';
@@ -1869,18 +1982,9 @@ function nems_events_views_default_views() {
   $handler->display->display_options['filters']['type']['value'] = array(
     'nems_event' => 'nems_event',
   );
-  /* Filter criterion: Content: Date - end date (field_nems_event_date:value2) */
-  $handler->display->display_options['filters']['field_nems_event_date_value2']['id'] = 'field_nems_event_date_value2';
-  $handler->display->display_options['filters']['field_nems_event_date_value2']['table'] = 'field_data_field_nems_event_date';
-  $handler->display->display_options['filters']['field_nems_event_date_value2']['field'] = 'field_nems_event_date_value2';
-  $handler->display->display_options['filters']['field_nems_event_date_value2']['operator'] = '<';
-  $handler->display->display_options['filters']['field_nems_event_date_value2']['form_type'] = 'date_text';
-  $handler->display->display_options['filters']['field_nems_event_date_value2']['default_date'] = 'today';
 
   /* Display: Upcoming Events simple list */
   $handler = $view->new_display('block', 'Upcoming Events simple list', 'block_events_simple_filters');
-  $handler->display->display_options['defaults']['css_class'] = FALSE;
-  $handler->display->display_options['css_class'] = 'block-events';
   $handler->display->display_options['defaults']['use_more'] = FALSE;
   $handler->display->display_options['use_more'] = TRUE;
   $handler->display->display_options['defaults']['use_more_always'] = FALSE;
@@ -1888,15 +1992,6 @@ function nems_events_views_default_views() {
   $handler->display->display_options['use_more_always'] = FALSE;
   $handler->display->display_options['defaults']['use_more_text'] = FALSE;
   $handler->display->display_options['use_more_text'] = 'More events';
-  $handler->display->display_options['defaults']['group_by'] = FALSE;
-  $handler->display->display_options['defaults']['pager'] = FALSE;
-  $handler->display->display_options['pager']['type'] = 'full';
-  $handler->display->display_options['pager']['options']['items_per_page'] = '10';
-  $handler->display->display_options['pager']['options']['offset'] = '0';
-  $handler->display->display_options['pager']['options']['id'] = '0';
-  $handler->display->display_options['pager']['options']['quantity'] = '9';
-  $handler->display->display_options['defaults']['relationships'] = FALSE;
-  $handler->display->display_options['defaults']['arguments'] = FALSE;
   $handler->display->display_options['defaults']['filter_groups'] = FALSE;
   $handler->display->display_options['defaults']['filters'] = FALSE;
   /* Filter criterion: Content: Published */
@@ -1924,7 +2019,32 @@ function nems_events_views_default_views() {
   /* Display: Past Event Simple List */
   $handler = $view->new_display('block', 'Past Event Simple List', 'block_1');
   $handler->display->display_options['defaults']['title'] = FALSE;
-  $handler->display->display_options['title'] = 'Past Events';
+  $handler->display->display_options['title'] = FALSE;
+  $handler->display->display_options['defaults']['css_class'] = FALSE;
+  $handler->display->display_options['css_class'] = 'page-events';
+  $handler->display->display_options['defaults']['filter_groups'] = FALSE;
+  $handler->display->display_options['defaults']['filters'] = FALSE;
+  /* Filter criterion: Content: Published */
+  $handler->display->display_options['filters']['status']['id'] = 'status';
+  $handler->display->display_options['filters']['status']['table'] = 'node';
+  $handler->display->display_options['filters']['status']['field'] = 'status';
+  $handler->display->display_options['filters']['status']['value'] = 1;
+  $handler->display->display_options['filters']['status']['group'] = 1;
+  $handler->display->display_options['filters']['status']['expose']['operator'] = FALSE;
+  /* Filter criterion: Content: Type */
+  $handler->display->display_options['filters']['type']['id'] = 'type';
+  $handler->display->display_options['filters']['type']['table'] = 'node';
+  $handler->display->display_options['filters']['type']['field'] = 'type';
+  $handler->display->display_options['filters']['type']['value'] = array(
+    'nems_event' => 'nems_event',
+  );
+  /* Filter criterion: Content: Date - end date (field_nems_event_date:value2) */
+  $handler->display->display_options['filters']['field_nems_event_date_value2']['id'] = 'field_nems_event_date_value2';
+  $handler->display->display_options['filters']['field_nems_event_date_value2']['table'] = 'field_data_field_nems_event_date';
+  $handler->display->display_options['filters']['field_nems_event_date_value2']['field'] = 'field_nems_event_date_value2';
+  $handler->display->display_options['filters']['field_nems_event_date_value2']['operator'] = '<';
+  $handler->display->display_options['filters']['field_nems_event_date_value2']['form_type'] = 'date_text';
+  $handler->display->display_options['filters']['field_nems_event_date_value2']['default_date'] = 'today';
   $export['nems_upcoming_past_events'] = $view;
 
   return $export;
