@@ -2,6 +2,9 @@
 ; Contributed modules
 ; ===================
 
+api = 2
+core = 7.x
+
 projects[admin_language][subdir] = "contrib"
 projects[admin_language][version] = "1.0-beta1"
 
