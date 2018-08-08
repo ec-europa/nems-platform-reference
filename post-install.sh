@@ -8,10 +8,12 @@ rm -f resources/nems-platform.make
 # Create clean folders
 mkdir lib/features/nems
 mkdir lib/themes/nems
+mkdir resources/patches
 
 # Copy the sources in place.
 cp -r vendor/ec-europa/nems-platform/modules/features/* lib/features/nems
 cp -r vendor/ec-europa/nems-platform/themes/* lib/themes/nems
+cp -r vendor/ec-europa/nems-platform/patches/* resources/patches
 cp vendor/ec-europa/nems-platform/nems-platform.make resources/nems-platform.make
 
 echo NEMS Sources copied...
