@@ -131,6 +131,7 @@ function nems_core_field_default_field_instances() {
     'required' => 0,
     'settings' => array(
       'blockreference_modules' => array(
+        'admin_language' => 0,
         'apachesolr_search' => 0,
         'bean' => 0,
         'block' => 0,
