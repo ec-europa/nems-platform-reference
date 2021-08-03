@@ -2,9 +2,6 @@
 ; Contributed modules
 ; ===================
 
-projects[admin_language][subdir] = "contrib"
-projects[admin_language][version] = "1.0-beta1"
-
 projects[block_access][subdir] = "contrib"
 projects[block_access][version] = "1.6"
 
